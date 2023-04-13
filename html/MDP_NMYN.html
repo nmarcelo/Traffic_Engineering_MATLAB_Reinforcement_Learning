@@ -1,0 +1,515 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>MDP_NMYN</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-04-13"><meta name="DC.source" content="MDP_NMYN.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Project Security aware routing in SDN networks</a></li><li><a href="#2">Clean slate</a></li><li><a href="#3">Model of the SWs</a></li><li><a href="#4">Analysis for a single SWn with different parameters</a></li><li><a href="#5">Network graph</a></li><li><a href="#6">Shortest path</a></li><li><a href="#7">Flows in the network</a></li><li><a href="#8">Network of M/M/1/k SWs</a></li><li><a href="#9">Expected Total  end to end flow of each flow</a></li><li><a href="#10">Expected Total  loss traffic in the network</a></li><li><a href="#11">MDP model</a></li></ul></div><h2 id="1">Project Security aware routing in SDN networks</h2><p>Starts: 25 march 2022</p><pre class="codeinput"><span class="comment">% Papers used:</span>
+<span class="comment">% Kim et al. Deep Reinforcement learning-based Routing on Software defined</span>
+<span class="comment">% networks.&lt;&lt;Model of the network based on M/M/1/k&gt;&gt;</span>
+<span class="comment">% Rezapour et al. RL-Shield: Mitigating Target Link-Flooding Attacks Using SDN and Deep</span>
+<span class="comment">% Reinforcement Learning Routing algorithm. &lt;&lt; MDP &gt;&gt;</span>
+<span class="comment">%</span>
+</pre><h2 id="2">Clean slate</h2><pre class="codeinput">clear
+close <span class="string">all</span>
+</pre><h2 id="3">Model of the SWs</h2><pre>SW model: M/M/1/k</pre><p><img vspace="5" hspace="5" src="StateTransitionMM1k.PNG" alt=""> </p><p>Parameters M: Arrival process have Poisson distribution, M: Service process have Poisson distribution, 1: One server, k: Length of the server queue: Capacity</p><pre class="codeinput">clc
+lambda_n_t = 10; <span class="comment">% rate of arrivals for SWn at t=t</span>
+mu_n     = 15; <span class="comment">% rate of service for SWn : constant</span>
+rho_n_t    =  lambda_n_t/mu_n; <span class="comment">% ratio mandatory 0&lt;rho_n_t&lt;=1</span>
+Kn = 10; <span class="comment">% capacity of SWn: constant</span>
+<span class="comment">%</span>
+<span class="comment">% Expected delay E[dn(t)] for SWn at t=t</span>
+E_d_n_t = 0; <span class="comment">% initial value</span>
+<span class="comment">% Probability of loss a flow due to overflow for SWn at t=t</span>
+P_b_n_t = 0;
+
+<span class="comment">% M/M/1/k model for SW nx at time t</span>
+[E_d_n_t, P_b_n_t] = M_M_1_k_t(Kn,lambda_n_t,mu_n);
+</pre><h2 id="4">Analysis for a single SWn with different parameters</h2><pre class="codeinput">close <span class="string">all</span>
+clc
+lambda_n_t = sort(randi([0 10],1,10)); <span class="comment">% U(0,10)</span>
+mu_n = 20;
+Kn = 2;
+rho_n_t    =  lambda_n_t/mu_n; <span class="comment">% mandatory 0&lt;rho_n_t&lt;=1</span>
+mmk1 = zeros(length(rho_n_t),2);
+<span class="keyword">for</span> i=1:length(rho_n_t)
+    [E_d_n_t, P_b_n_t] =  M_M_1_k_t(Kn,lambda_n_t(i),mu_n);
+    mmk1(i,:) = [E_d_n_t, P_b_n_t];
+<span class="keyword">end</span>
+plot(rho_n_t,mmk1(:,1),<span class="string">'b--o'</span>,<span class="string">'LineWidth'</span>,2); hold <span class="string">on</span>
+plot(rho_n_t,mmk1(:,2),<span class="string">'r--x'</span>,<span class="string">'LineWidth'</span>,2);
+xlabel(<span class="string">'\rho=\lambda/\mu'</span>)
+legend(<span class="string">'Expected delay'</span>,<span class="string">'Loss Probability'</span>)
+grid(<span class="string">'minor'</span>)
+</pre><img vspace="5" hspace="5" src="MDP_NMYN_01.png" alt=""> <h2 id="5">Network graph</h2><p><img src="MDP_NMYN_eq09178345267655831533.png" alt="$$ E = \{e_1, e_2, ..., e_{|E|}\} $$"> : Directional Link</p><p><img src="MDP_NMYN_eq12013742309885838189.png" alt="$$ V = \{v_1, v_2, ..., v_{|N|}\} $$"> : Node</p><p><img src="MDP_NMYN_eq01529491970100475268.png" alt="$$ G = (V, E) $$">  : Graph</p><pre class="codeinput">close <span class="string">all</span>
+clc
+N = 5;  <span class="comment">% number of edges</span>
+A = ones(N); <span class="comment">% Adjacency matrix (edges or links)</span>
+<span class="comment">% W = -0 + (0+1)*rand(N); % Weight: initial values Uniform distribution(0,1)</span>
+W = [0.2625    0.4886    0.5468    0.6791    0.8852
+    0.8010    0.5785    0.5211    0.3955    0.9133
+    0.0292    0.2373    0.2316    0.3674    0.7962
+    0.9289    0.4588    0.4889    0.9880    0.0987
+    0.7303    0.9631    0.6241    0.0377    0.2619];
+G = digraph(W, <span class="string">'omitSelfLoops'</span>);
+g = plot(G,<span class="string">'Layout'</span>,<span class="string">'force'</span>,<span class="string">'EdgeLabel'</span>,G.Edges.Weight);
+</pre><img vspace="5" hspace="5" src="MDP_NMYN_02.png" alt=""> <h2 id="6">Shortest path</h2><pre class="codeinput">close <span class="string">all</span>
+i = 3;   <span class="comment">% node i src</span>
+j = 5;   <span class="comment">% node j dst</span>
+[pij,cij] = shortestpath(G,i,j);
+g = plot(G,<span class="string">'Layout'</span>,<span class="string">'force'</span>,<span class="string">'EdgeLabel'</span>,G.Edges.Weight);
+highlight(g,pij,<span class="string">'EdgeColor'</span>,<span class="string">'g'</span>);
+</pre><img vspace="5" hspace="5" src="MDP_NMYN_03.png" alt=""> <h2 id="7">Flows in the network</h2><p><img src="MDP_NMYN_eq04118654381534718929.png" alt="$$F_t = \{f_t^{1}, f_t^{2}, ..., f_t^{k}, ..., f_t^{M_t}\} $$"> : Flow in the network</p><p><img src="MDP_NMYN_eq16550762224374044273.png" alt="$$ p_{i,j} = \{v_1^{i,j}, v_2^{i,j}, ..., v_{|p|}^{i,j}\} $$">: Shortest path for a pair of nodes i,j</p><pre class="codeinput"><span class="comment">% Create 100 flows arbitrary</span>
+clc
+Mt = 10;
+F_t=randi([1 N],Mt,2);
+F_t(F_t(:,1)==F_t(:,2),:)=[]; <span class="comment">% avoid internal flows</span>
+Mt = length(F_t);
+Lambda_k_t = -0 + (0+1)*rand(Mt); <span class="comment">% Poisson arrivals of each flow fk</span>
+</pre><h2 id="8">Network of M/M/1/k SWs</h2><pre class="codeinput">clc
+close
+g = plot(G,<span class="string">'Layout'</span>,<span class="string">'force'</span>,<span class="string">'EdgeLabel'</span>,G.Edges.Weight);
+<span class="comment">%</span>
+<span class="comment">% Parameters of SWs</span>
+lambda_n_t = randi([10 15],N,1); <span class="comment">% rate of arrivals for SWn at t=t</span>
+mu_n     = randi([15 20],N,1); <span class="comment">% rate of service for SWn : constant</span>
+rho_n_t    =  lambda_n_t./mu_n; <span class="comment">% ratio mandatory 0&lt;rho_n_t&lt;=1</span>
+Kn = randi([12 20],N,1); <span class="comment">% capacity of SWn: constant</span>
+<span class="comment">% Shortest paths for each fk in F</span>
+pij_k = {};
+<span class="keyword">for</span> k=1:Mt
+    i = F_t(k,1);
+    j = F_t(k,2);
+    [pij,cij] = shortestpath(G,i,j);
+    pij_k{k} = pij;
+    highlight(g,pij,<span class="string">'EdgeColor'</span>,rand(1,3));
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="MDP_NMYN_04.png" alt=""> <h2 id="9">Expected Total  end to end flow of each flow</h2><pre class="codeinput">De2ek = zeros(1,Mt);
+D_e2e_avg_t = 0;
+<span class="keyword">for</span> k=1:Mt  <span class="comment">% for each flow</span>
+    pij = pij_k{k};
+    D_e2e_k_t = 0;
+    <span class="keyword">for</span> n=1:length(pij) <span class="comment">% for each SWn in path for fk</span>
+        [E_d_n_t, P_b_n_t] =  M_M_1_k_t(Kn(pij(n)),lambda_n_t(pij(n)),mu_n(pij(n))); <span class="comment">% delay at SWn</span>
+        D_e2e_k_t = D_e2e_k_t + E_d_n_t;
+    <span class="keyword">end</span>
+    D_e2e_avg_t = D_e2e_avg_t + D_e2e_k_t/length(pij);
+<span class="keyword">end</span>
+D_e2e_avg_t = D_e2e_avg_t/Mt
+</pre><pre class="codeoutput">
+D_e2e_avg_t =
+
+    2.9726
+
+</pre><h2 id="10">Expected Total  loss traffic in the network</h2><pre class="codeinput">E_L_total_n_t = 0;
+<span class="keyword">for</span> n=1:N
+    [E_d_n_t, P_b_n_t] =  M_M_1_k_t(Kn(n),lambda_n_t(n),mu_n(n)); <span class="comment">% delay at SWn</span>
+    E_L_total_n_t = E_L_total_n_t + P_b_n_t*lambda_n_t(n);
+<span class="keyword">end</span>
+E_L_total_n_t
+</pre><pre class="codeoutput">
+E_L_total_n_t =
+
+    0.3712
+
+</pre><h2 id="11">MDP model</h2><p>state representation Observations from the SWn {Kn, Nn_t, lambda_n_t, L_n_t, rho_n_t, d_n_t} time: time step Kn: Capacity of SWn Nn_t: Quee ocupation at t lambda_n_t: Aggregate arrival rate at t L_n_t: Espected loss traffic at t; is it calculated? Using M/M/1/k model? rho_n_t: Utilization of SWn at t d_n_t: Expected delay at t; is it calculated? Using M/M/1/k model?</p><p>Get state st s_t = [f1,f2,f3,f4]' f_1 = [0, 1, 0, 0, ... , 0_|N|]'; Src node f_2 = [0, 0, 1, 0, ... , 0_|N|]'; Dst node f_3 = [0, 1, 0, 1, ... , 1_|E|]'; current path f_4 = [0, 1, 0, 0, ... , 0_|N|]'; current node</p><pre class="codeinput"><span class="comment">%</span>
+<span class="comment">% Actions</span>
+<span class="comment">% A = [a_1, a_2 ..., a_|E|]'     ; a_i: next hop to node i. If current</span>
+<span class="comment">% node=i then a_i means blocking</span>
+
+<span class="comment">%</span>
+<span class="comment">% Evaluating in this example a random policy</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+clc;
+close <span class="string">all</span>
+G; <span class="comment">% directed graph</span>
+Edges = G.Edges; <span class="comment">% undirected graph</span>
+Links = Edges.EndNodes;
+L = length(Links);
+<span class="comment">% Action set</span>
+A = 1:N; <span class="comment">% hop to SWn. a_i: next hop to node i. If current</span>
+<span class="comment">% node=i then a_i means blocking</span>
+t = 1;
+T = 10; <span class="comment">% max_steps per episode</span>
+
+
+<span class="comment">% EPISODE</span>
+e  = 1;
+reward = 0;
+<span class="comment">% initial state</span>
+src_dst = randperm(N,2)  <span class="comment">%Src-Dst nodes</span>
+f_1 = zeros(N,1); f_1(src_dst(1))=1; <span class="comment">%Src node</span>
+f_2 = zeros(N,1); f_2(src_dst(2))=1; <span class="comment">%Dst node</span>
+f_3 = false(L,1); <span class="comment">% current path</span>
+f_4 = zeros(N,1); f_4(src_dst(1))=1; <span class="comment">% current node is src node</span>
+s_t = [f_1;f_2;f_3;f_4];
+
+<span class="keyword">for</span> step = 1:T <span class="comment">% steps</span>
+    a = randi(length(A));  <span class="comment">% random policy next node?</span>
+    <span class="comment">% execute action</span>
+    f_1 = s_t(1:N); <span class="comment">%Src node</span>
+    f_2 = s_t(N+1:2*N); <span class="comment">%Dst node</span>
+    f_3 = s_t(2*N+1:2*N+L); <span class="comment">% current path</span>
+    f_4 = s_t(2*N+L+1:end); <span class="comment">% current node</span>
+    current_node=find(f_4==1);  <span class="comment">% current node</span>
+    neighb = successors(G,current_node);    <span class="comment">% neighbors</span>
+    a_posible = find(neighb==a);   <span class="comment">% is it a valid action?</span>
+    <span class="keyword">if</span> isempty(a_posible) <span class="comment">% is an invalid action</span>
+        reward = -0.02;   <span class="comment">% if a_i is not possible</span>
+        <span class="keyword">break</span>;            <span class="comment">% END OF EPISODE</span>
+    <span class="keyword">else</span>
+        <span class="comment">% next state</span>
+        f_1_ = f_1; <span class="comment">% src_dst doesnot change inside the epoch</span>
+        f_2_ = f_2; <span class="comment">% src_dst doesnot change inside the epoch</span>
+        [tf_1, index_1]=ismember(Links,[current_node a],<span class="string">'rows'</span>);  <span class="comment">% which link?</span>
+        f_3_ = f_3 | tf_1;  <span class="comment">%  current path</span>
+        f_4_ = zeros(N,1); f_4_(a)=1;   <span class="comment">% current node</span>
+        s_t_ = [f_1_;f_2_;f_3_;f_4_];
+
+        dst = find(f_2_==1);
+        <span class="keyword">if</span> (a == dst) <span class="comment">% dst node reached</span>
+            reward = 1;  <span class="comment">% maximum reward, successfully routing</span>
+            <span class="keyword">break</span>; <span class="comment">% END OF EPISODE</span>
+        <span class="keyword">else</span>
+            <span class="keyword">if</span> step == T   <span class="comment">% maximum steps reached and dst was not found</span>
+                reward = 0.01;
+                <span class="keyword">break</span>; <span class="comment">% END OF EPISODE</span>
+            <span class="keyword">else</span>
+                reward = 0;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    s_t = s_t_; <span class="comment">% next state</span>
+<span class="keyword">end</span>
+s_t = s_t_;  <span class="comment">% needed for final states</span>
+close
+f_3 = logical(s_t(2*N+1:2*N+L)); <span class="comment">% current path</span>
+edges = find(f_3==1);
+g = plot(G,<span class="string">'Layout'</span>,<span class="string">'force'</span>,<span class="string">'EdgeLabel'</span>,G.Edges.Weight);
+highlight(g,<span class="string">'Edges'</span>,edges,<span class="string">'EdgeColor'</span>,<span class="string">'red'</span>,<span class="string">'LineWidth'</span>,2);
+reward
+step
+<span class="comment">%</span>
+</pre><pre class="codeoutput">
+src_dst =
+
+     4     3
+
+
+reward =
+
+     1
+
+
+step =
+
+     1
+
+</pre><img vspace="5" hspace="5" src="MDP_NMYN_05.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Project Security aware routing in SDN networks
+% Starts: 25 march 2022
+
+% Papers used: 
+% Kim et al. Deep Reinforcement learning-based Routing on Software defined 
+% networks.<<Model of the network based on M/M/1/k>>
+% Rezapour et al. RL-Shield: Mitigating Target Link-Flooding Attacks Using SDN and Deep
+% Reinforcement Learning Routing algorithm. << MDP >>
+% 
+%% Clean slate
+clear
+close all
+
+%% Model of the SWs
+%  SW model: M/M/1/k
+% 
+% <<StateTransitionMM1k.PNG>>
+%
+% Parameters
+% M: Arrival process have Poisson distribution,
+% M: Service process have Poisson distribution,
+% 1: One server,
+% k: Length of the server queue: Capacity
+clc
+lambda_n_t = 10; % rate of arrivals for SWn at t=t
+mu_n     = 15; % rate of service for SWn : constant
+rho_n_t    =  lambda_n_t/mu_n; % ratio mandatory 0<rho_n_t<=1
+Kn = 10; % capacity of SWn: constant
+%
+% Expected delay E[dn(t)] for SWn at t=t
+E_d_n_t = 0; % initial value
+% Probability of loss a flow due to overflow for SWn at t=t
+P_b_n_t = 0; 
+
+% M/M/1/k model for SW nx at time t
+[E_d_n_t, P_b_n_t] = M_M_1_k_t(Kn,lambda_n_t,mu_n);
+%% Analysis for a single SWn with different parameters
+close all
+clc
+lambda_n_t = sort(randi([0 10],1,10)); % U(0,10)
+mu_n = 20;
+Kn = 2;
+rho_n_t    =  lambda_n_t/mu_n; % mandatory 0<rho_n_t<=1
+mmk1 = zeros(length(rho_n_t),2);
+for i=1:length(rho_n_t)
+    [E_d_n_t, P_b_n_t] =  M_M_1_k_t(Kn,lambda_n_t(i),mu_n);
+    mmk1(i,:) = [E_d_n_t, P_b_n_t];
+end
+plot(rho_n_t,mmk1(:,1),'bREPLACE_WITH_DASH_DASHo','LineWidth',2); hold on
+plot(rho_n_t,mmk1(:,2),'rREPLACE_WITH_DASH_DASHx','LineWidth',2);
+xlabel('\rho=\lambda/\mu')
+legend('Expected delay','Loss Probability')
+grid('minor')
+%% Network graph
+% $$ E = \{e_1, e_2, ..., e_{|E|}\} $$ : Directional Link 
+%
+% $$ V = \{v_1, v_2, ..., v_{|N|}\} $$ : Node
+% 
+% $$ G = (V, E) $$  : Graph
+%
+close all
+clc
+N = 5;  % number of edges
+A = ones(N); % Adjacency matrix (edges or links)
+% W = -0 + (0+1)*rand(N); % Weight: initial values Uniform distribution(0,1)
+W = [0.2625    0.4886    0.5468    0.6791    0.8852
+    0.8010    0.5785    0.5211    0.3955    0.9133
+    0.0292    0.2373    0.2316    0.3674    0.7962
+    0.9289    0.4588    0.4889    0.9880    0.0987
+    0.7303    0.9631    0.6241    0.0377    0.2619];
+G = digraph(W, 'omitSelfLoops');
+g = plot(G,'Layout','force','EdgeLabel',G.Edges.Weight);
+%% Shortest path 
+close all
+i = 3;   % node i src
+j = 5;   % node j dst
+[pij,cij] = shortestpath(G,i,j);
+g = plot(G,'Layout','force','EdgeLabel',G.Edges.Weight);
+highlight(g,pij,'EdgeColor','g');
+%% Flows in the network
+% 
+% $$F_t = \{f_t^{1}, f_t^{2}, ..., f_t^{k}, ..., f_t^{M_t}\} $$ : Flow in
+% the network
+% 
+% $$ p_{i,j} = \{v_1^{i,j}, v_2^{i,j}, ..., v_{|p|}^{i,j}\} $$: Shortest path for a pair of nodes i,j
+
+% Create 100 flows arbitrary
+clc
+Mt = 10;           
+F_t=randi([1 N],Mt,2); 
+F_t(F_t(:,1)==F_t(:,2),:)=[]; % avoid internal flows
+Mt = length(F_t);
+Lambda_k_t = -0 + (0+1)*rand(Mt); % Poisson arrivals of each flow fk
+
+%% Network of M/M/1/k SWs
+% 
+clc
+close
+g = plot(G,'Layout','force','EdgeLabel',G.Edges.Weight);
+% 
+% Parameters of SWs
+lambda_n_t = randi([10 15],N,1); % rate of arrivals for SWn at t=t
+mu_n     = randi([15 20],N,1); % rate of service for SWn : constant
+rho_n_t    =  lambda_n_t./mu_n; % ratio mandatory 0<rho_n_t<=1
+Kn = randi([12 20],N,1); % capacity of SWn: constant
+% Shortest paths for each fk in F
+pij_k = {};
+for k=1:Mt
+    i = F_t(k,1);
+    j = F_t(k,2);
+    [pij,cij] = shortestpath(G,i,j);
+    pij_k{k} = pij;
+    highlight(g,pij,'EdgeColor',rand(1,3));
+end
+%% Expected Total  end to end flow of each flow
+De2ek = zeros(1,Mt);
+D_e2e_avg_t = 0;
+for k=1:Mt  % for each flow
+    pij = pij_k{k};
+    D_e2e_k_t = 0;
+    for n=1:length(pij) % for each SWn in path for fk
+        [E_d_n_t, P_b_n_t] =  M_M_1_k_t(Kn(pij(n)),lambda_n_t(pij(n)),mu_n(pij(n))); % delay at SWn
+        D_e2e_k_t = D_e2e_k_t + E_d_n_t;
+    end
+    D_e2e_avg_t = D_e2e_avg_t + D_e2e_k_t/length(pij);
+end
+D_e2e_avg_t = D_e2e_avg_t/Mt
+%% Expected Total  loss traffic in the network
+E_L_total_n_t = 0;
+for n=1:N
+    [E_d_n_t, P_b_n_t] =  M_M_1_k_t(Kn(n),lambda_n_t(n),mu_n(n)); % delay at SWn
+    E_L_total_n_t = E_L_total_n_t + P_b_n_t*lambda_n_t(n);
+end
+E_L_total_n_t
+%% MDP model
+% state representation
+% Observations from the SWn
+% {Kn, Nn_t, lambda_n_t, L_n_t, rho_n_t, d_n_t}
+% time: time step
+% Kn: Capacity of SWn
+% Nn_t: Quee ocupation at t
+% lambda_n_t: Aggregate arrival rate at t
+% L_n_t: Espected loss traffic at t; is it calculated? Using M/M/1/k model?
+% rho_n_t: Utilization of SWn at t
+% d_n_t: Expected delay at t; is it calculated? Using M/M/1/k model?
+%
+% Get state st
+% s_t = [f1,f2,f3,f4]'
+% f_1 = [0, 1, 0, 0, ... , 0_|N|]'; Src node
+% f_2 = [0, 0, 1, 0, ... , 0_|N|]'; Dst node
+% f_3 = [0, 1, 0, 1, ... , 1_|E|]'; current path
+% f_4 = [0, 1, 0, 0, ... , 0_|N|]'; current node
+
+%
+% Actions
+% A = [a_1, a_2 ..., a_|E|]'     ; a_i: next hop to node i. If current  
+% node=i then a_i means blocking
+
+%
+% Evaluating in this example a random policy
+%
+%
+clc;
+close all
+G; % directed graph
+Edges = G.Edges; % undirected graph
+Links = Edges.EndNodes;
+L = length(Links);
+% Action set
+A = 1:N; % hop to SWn. a_i: next hop to node i. If current  
+% node=i then a_i means blocking
+t = 1;
+T = 10; % max_steps per episode
+
+
+% EPISODE
+e  = 1;
+reward = 0;
+% initial state
+src_dst = randperm(N,2)  %Src-Dst nodes
+f_1 = zeros(N,1); f_1(src_dst(1))=1; %Src node
+f_2 = zeros(N,1); f_2(src_dst(2))=1; %Dst node
+f_3 = false(L,1); % current path
+f_4 = zeros(N,1); f_4(src_dst(1))=1; % current node is src node
+s_t = [f_1;f_2;f_3;f_4];
+
+for step = 1:T % steps
+    a = randi(length(A));  % random policy next node?
+    % execute action
+    f_1 = s_t(1:N); %Src node
+    f_2 = s_t(N+1:2*N); %Dst node
+    f_3 = s_t(2*N+1:2*N+L); % current path
+    f_4 = s_t(2*N+L+1:end); % current node
+    current_node=find(f_4==1);  % current node
+    neighb = successors(G,current_node);    % neighbors
+    a_posible = find(neighb==a);   % is it a valid action?
+    if isempty(a_posible) % is an invalid action
+        reward = -0.02;   % if a_i is not possible
+        break;            % END OF EPISODE
+    else
+        % next state
+        f_1_ = f_1; % src_dst doesnot change inside the epoch
+        f_2_ = f_2; % src_dst doesnot change inside the epoch
+        [tf_1, index_1]=ismember(Links,[current_node a],'rows');  % which link?
+        f_3_ = f_3 | tf_1;  %  current path
+        f_4_ = zeros(N,1); f_4_(a)=1;   % current node
+        s_t_ = [f_1_;f_2_;f_3_;f_4_];
+
+        dst = find(f_2_==1);
+        if (a == dst) % dst node reached
+            reward = 1;  % maximum reward, successfully routing
+            break; % END OF EPISODE
+        else
+            if step == T   % maximum steps reached and dst was not found
+                reward = 0.01;
+                break; % END OF EPISODE
+            else
+                reward = 0;
+            end
+        end
+    end
+    s_t = s_t_; % next state
+end
+s_t = s_t_;  % needed for final states
+close
+f_3 = logical(s_t(2*N+1:2*N+L)); % current path
+edges = find(f_3==1);
+g = plot(G,'Layout','force','EdgeLabel',G.Edges.Weight);
+highlight(g,'Edges',edges,'EdgeColor','red','LineWidth',2);
+reward
+step
+%
+
+
+
+
+
+
+
+
+##### SOURCE END #####
+--></body></html>
